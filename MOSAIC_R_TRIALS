@@ -1,0 +1,112 @@
+# MOSAIC 
+install.packages("mosaic")
+library(mosaic)
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readxl)
+
+## Formater les data 
+
+DIURON_dat<-read_excel("/Users/sarah-loublanchard/Downloads/G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                       sheet = 1)
+IRGAROL_dat<-read_excel("/Users/sarah-loublanchard/Downloads/G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                        sheet = 2)
+TERBUTRYNE_dat<-read_excel("/Users/sarah-loublanchard/Downloads/G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                           sheet = 3)
+ISOPROTURON_dat<-read_excel("/Users/sarah-loublanchard/Downloads/G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                            sheet = 4)
+
+# convertir les datatable comme Garance m'a donné 
+IRGAROL_long <- pivot_longer(IRGAROL_dat, cols = 3:37, 
+                             names_to = "time", values_to = "concentration")
+DIURON_long <- pivot_longer(DIURON_dat, cols = 3:37, 
+                             names_to = "time", values_to = "concentration")
+ISOPROTURON_long <- pivot_longer(ISOPROTURON_dat, cols = 3:37, 
+                             names_to = "time", values_to = "concentration")
+TERBUTRYN_long <- pivot_longer(IRGAROL_dat, cols = 3:37, 
+                             names_to = "time", values_to = "concentration")
+
+# la j'ai changé les noms des colones, je sais pas pourquoi surement inutile 
+colnames(IRGAROL_long)[colnames(IRGAROL_long) == "concentration"] <- "réponse"
+colnames(DIURON_long)[colnames(DIURON_long) == "concentration"] <- "réponse"
+colnames(ISOPROTURON_long)[colnames(ISOPROTURON_long) == "concentration"] <- "réponse"
+colnames(TERBUTRYN_long)[colnames(TERBUTRYN_long) == "concentration"] <- "réponse"
+
+# Ajuster un modèle linéaire
+modI <- lm(Designation ~ time, data = IRGAROL_long)
+modD <- lm(réponse ~ time, data = DIURON_long)
+modISO <- lm(réponse ~ time, data = ISOPROTURON_long)
+modT<- lm(réponse ~ time, data = TERBUTRYN_long)
+
+# Résumé du modèle
+summary(modI)
+
+#plot de ses morts qui a l'air de marcher (à faire pour tous) 
+
+ggplot(DIURON_long, aes(x = time, y = réponse, color = Designation)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) + # Régression linéaire avec intervalle de confiance
+  labs(title = "Réponse en fonction du temps", x = "Temps", y = "Réponse") +
+  theme_minimal() # Utilise un thème minimal
+
+
+# TENTATIVE CALCULES EC50 (spoiler : ECHEC)
+
+# Calculer l'EC50
+install.packages("drc")
+library(drc)
+
+# Vérifier la longueur des colonnes
+length(IRGAROL_long$time)
+length(IRGAROL_long$réponse)
+
+modelI <- drm( réponse ~ time  , data = IRGAROL_long, fct = LL.4())  # LL.4 est pour un modèle log-logistique à 4 paramètres
+modelD <- drm(réponse ~ time  , data = DIURON_long, fct = LL.4())
+modelISO <- drm(réponse ~ time  , data = ISOPROTURON_long, fct = LL.4())
+modelT <- drm(réponse ~ time  , data = TERBUTRYN_long, fct = LL.4())
+
+# Résumé du modèle
+summary(modelI)
+summary(modelD)
+summary(modelISO)
+summary(modelT)
+
+
+
+
+# Extraire l'EC50
+EC50_DIURON <- ED(modelD, 50, interval = "delta")
+## Estimated effective doses
+
+##Estimate Std. Error   Lower   Upper
+## e:1:50  26.8850    15.2633 -3.0478 56.8178
+
+EC50_ISO <- ED(modelISO, 50, interval = "delta")
+## Estimated effective doses
+
+##Estimate Std. Error   Lower   Upper
+##e:1:50  5480.62     153.99 5178.46 5782.78
+
+EC50_TERBUTRYNE <- ED(modelT, 50, interval = "delta")
+
+## Estimated effective doses
+
+## Estimate Std. Error   Lower   Upper
+## e:1:50  11.5642     3.8053  4.1015 19.0268
+
+EC50_IRGAROL <- ED(modelI, 50, interval = "delta")
+## Estimated effective doses
+
+## Estimate Std. Error   Lower   Upper
+### e:1:50  11.5642     3.8053  4.1015 19.0268
+
+# Afficher l'EC50 big echec 
+print(EC50_DIURON)
+
+# Tracer la courbe dose-réponse
+plot(modelT, type = "all")  # type = "all" montre la courbe ajustée et les points de données
+
+# Ajouter une ligne verticale pour l'EC50
+abline(v = EC50_TERBUTRYNE[1], col = "red", lty = 2)  # Ligne rouge pour l'EC50
