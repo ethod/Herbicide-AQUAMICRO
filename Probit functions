@@ -1,0 +1,360 @@
+##         |------------------------------------------------------|
+##         |            FONCTIONS à L'ARRACHE                     |
+##         |------------------------------------------------------|
+
+EEAAO_DIURON <- function (herbicide, temps){
+  # Remove rows with NA values
+  yaybicide <- na.omit(herbicide)
+    # Extraire les noms des colonnes de temps (4 à 37)
+  time_labels <- colnames(yaybicide)[3:ncol(yaybicide)]
+  
+  # Étape 1: Créer un dataframe vide pour stocker les nouvelles données
+  herbicide_long <- data.frame(
+    id = integer(),
+    time = character(),
+    mortality = numeric()
+  )
+  
+  # Étape 2: Boucler sur chaque échantillon (chaque ligne) et sur chaque temps (colonnes 4 à 37)
+  for (i in 1:nrow(yaybicide)) {
+    # Concentration initiale (t0) pour cet échantillon
+    concentration_initiale <- yaybicide[i, 3]
+    
+    # Boucler sur les colonnes de temps (4 à 37)
+    for (j in 3:ncol(yaybicide)) {
+      # Calculer la mortalité à chaque temps
+      mortality_value <- (concentration_initiale - yaybicide[i, j]) / concentration_initiale
+      
+      
+      # Ajouter une nouvelle ligne au dataframe
+      herbicide_long <- rbind(
+        herbicide_long,
+        data.frame(
+          id = herbicide[i, 2],       # L'identifiant de l'échantillon
+          time = time_labels[j - 2],    # Le nom de la colonne (intitulé de temps)
+          mortality = mortality_value    # La mortalité calculée
+        )
+      )
+    }
+  }
+  
+  # Remplacer toutes les valeurs négatives de la colonne 'mortality' par 0
+  herbicide_long$X0[herbicide_long$X0 <= 0] <- 0.001
+  herbicide_long$X0[herbicide_long$X0 == 1] <- 0.999
+  
+  # Vérifier les premières lignes après la modification
+  head(herbicide_long)
+  
+  # Appliquer la transformation probit sur la mortalité
+  herbicide_long$probit <- qnorm(herbicide_long$X0) +5 ##if real probits you want
+  
+  herbicide_long$concentration <- 0
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$Designation[i] == "D 0,625") {
+      herbicide_long$concentration[i] <- 0.625
+    }
+    if (herbicide_long$Designation[i] == "D 1,25") {
+      herbicide_long$concentration[i] <- 1.25
+    }
+    if (herbicide_long$Designation[i] == "D 2,5") {
+      herbicide_long$concentration[i] <- 2.5
+    }
+    if (herbicide_long$Designation[i] == "D 5") {
+      herbicide_long$concentration[i] <- 5
+    }
+    if (herbicide_long$Designation[i] == "D 10") {
+      herbicide_long$concentration[i] <- 10
+    }
+    if (herbicide_long$Designation[i] == "D 20") {
+      herbicide_long$concentration[i] <- 20
+    }
+    if (herbicide_long$Designation[i] == "D 40") {
+      herbicide_long$concentration[i] <- 40
+    }
+    if (herbicide_long$Designation[i] == "D 80") {
+      herbicide_long$concentration[i] <- 80
+    }
+    
+  }
+  
+  herbicide_long$log_concentration <- log(herbicide_long$concentration)
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$log_concentration[i] == -Inf){
+      herbicide_long$log_concentration[i] <- -3
+    }
+  }
+  
+  herbicide_t_lonely <- data.frame()
+  
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$time[i] == temps){
+      herbicide_t_lonely <- rbind(herbicide_t_lonely, herbicide_long[i,])
+    }
+  }  
+  return(herbicide_t_lonely)
+}
+
+EEAAO_IRGAROL <- function (naybicide, temps){
+  herbicide <- na.omit(naybicide)
+  # Extraire les noms des colonnes de temps (4 à 37)
+  time_labels <- colnames(herbicide)[3:ncol(herbicide)]
+  
+  # Étape 1: Créer un dataframe vide pour stocker les nouvelles données
+  herbicide_long <- data.frame(
+    id = integer(),
+    time = character(),
+    mortality = numeric()
+  )
+  
+  # Étape 2: Boucler sur chaque échantillon (chaque ligne) et sur chaque temps (colonnes 4 à 37)
+  for (i in 1:nrow(herbicide)) {
+    # Concentration initiale (t0) pour cet échantillon
+    concentration_initiale <- herbicide[i, 3]
+    
+    # Boucler sur les colonnes de temps (4 à 37)
+    for (j in 3:ncol(herbicide)) {
+      # Calculer la mortalité à chaque temps
+      mortality_value <- (concentration_initiale - herbicide[i, j]) / concentration_initiale
+      
+      
+      # Ajouter une nouvelle ligne au dataframe
+      herbicide_long <- rbind(
+        herbicide_long,
+        data.frame(
+          id = herbicide[i, 2],       # L'identifiant de l'échantillon
+          time = time_labels[j - 2],    # Le nom de la colonne (intitulé de temps)
+          mortality = mortality_value    # La mortalité calculée
+        )
+      )
+    }
+  }
+  
+  # Remplacer toutes les valeurs négatives de la colonne 'mortality' par 0
+  herbicide_long$X0[herbicide_long$X0 <= 0] <- 0.001
+  herbicide_long$X0[herbicide_long$X0 == 1] <- 0.999
+  
+  # Vérifier les premières lignes après la modification
+  head(herbicide_long)
+  
+  # Appliquer la transformation probit sur la mortalité
+  herbicide_long$probit <- qnorm(herbicide_long$X0) +5 ##if real probits you want
+  
+  herbicide_long$concentration <- 0
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$Designation[i] == "I 0,125") {
+      herbicide_long$concentration[i] <- 0.125
+    }
+    if (herbicide_long$Designation[i] == "I 0,25") {
+      herbicide_long$concentration[i] <- 0.25
+    }
+    if (herbicide_long$Designation[i] == "I 0,5") {
+      herbicide_long$concentration[i] <- 0.5
+    }
+    if (herbicide_long$Designation[i] == "I 1") {
+      herbicide_long$concentration[i] <- 1
+    }
+    if (herbicide_long$Designation[i] == "I 2") {
+      herbicide_long$concentration[i] <- 2
+    }
+    if (herbicide_long$Designation[i] == "I 4") {
+      herbicide_long$concentration[i] <- 4
+    }
+    if (herbicide_long$Designation[i] == "I 8") {
+      herbicide_long$concentration[i] <- 8
+    }
+    if (herbicide_long$Designation[i] == "I 16") {
+      herbicide_long$concentration[i] <- 16
+    }
+    
+  }
+  
+  herbicide_long$log_concentration <- log(herbicide_long$concentration)
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$log_concentration[i] == -Inf){
+      herbicide_long$log_concentration[i] <- -3
+    }
+  }
+  
+  herbicide_t_lonely <- data.frame()
+  
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$time[i] == temps){
+      herbicide_t_lonely <- rbind(herbicide_t_lonely, herbicide_long[i,])
+    }
+  }  
+  return(herbicide_t_lonely)
+}
+
+EEAAO_ISOPROTURON <- function (naybicide, temps){
+  herbicide <- na.omit(naybicide)
+  # Extraire les noms des colonnes de temps (4 à 37)
+  time_labels <- colnames(herbicide)[3:ncol(herbicide)]
+  
+  # Étape 1: Créer un dataframe vide pour stocker les nouvelles données
+  herbicide_long <- data.frame(
+    id = integer(),
+    time = character(),
+    mortality = numeric()
+  )
+  
+  # Étape 2: Boucler sur chaque échantillon (chaque ligne) et sur chaque temps (colonnes 4 à 37)
+  for (i in 1:nrow(herbicide)) {
+    # Concentration initiale (t0) pour cet échantillon
+    concentration_initiale <- herbicide[i, 3]
+    
+    # Boucler sur les colonnes de temps (4 à 37)
+    for (j in 3:ncol(herbicide)) {
+      # Calculer la mortalité à chaque temps
+      mortality_value <- (concentration_initiale - herbicide[i, j]) / concentration_initiale
+      
+      
+      # Ajouter une nouvelle ligne au dataframe
+      herbicide_long <- rbind(
+        herbicide_long,
+        data.frame(
+          id = herbicide[i, 2],       # L'identifiant de l'échantillon
+          time = time_labels[j - 2],    # Le nom de la colonne (intitulé de temps)
+          mortality = mortality_value    # La mortalité calculée
+        )
+      )
+    }
+  }
+  
+  # Remplacer toutes les valeurs négatives de la colonne 'mortality' par 0
+  herbicide_long$X1[herbicide_long$X1 <= 0] <- 0.001
+  herbicide_long$X1[herbicide_long$X1 == 1] <- 0.999
+  
+  # Vérifier les premières lignes après la modification
+  head(herbicide_long)
+  
+  # Appliquer la transformation probit sur la mortalité
+  herbicide_long$probit <- qnorm(herbicide_long$X1) +5 ##if real probits you want
+  
+  herbicide_long$concentration <- 0
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$Designation[i] == "Iso 15") {
+      herbicide_long$concentration[i] <- 15
+    }
+    if (herbicide_long$Designation[i] == "Iso 30") {
+      herbicide_long$concentration[i] <- 30
+    }
+    if (herbicide_long$Designation[i] == "Iso 60") {
+      herbicide_long$concentration[i] <- 60
+    }
+    if (herbicide_long$Designation[i] == "Iso 120") {
+      herbicide_long$concentration[i] <- 120
+    }
+    if (herbicide_long$Designation[i] == "Iso 240") {
+      herbicide_long$concentration[i] <- 240
+    }
+    if (herbicide_long$Designation[i] == "Iso 480") {
+      herbicide_long$concentration[i] <- 480
+    }
+    if (herbicide_long$Designation[i] == "Iso 960") {
+      herbicide_long$concentration[i] <- 960
+    }
+  }
+  
+  herbicide_long$log_concentration <- log(herbicide_long$concentration)
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$log_concentration[i] == -Inf){
+      herbicide_long$log_concentration[i] <- -3
+    }
+  }
+  
+  herbicide_t_lonely <- data.frame()
+  
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$time[i] == temps){
+      herbicide_t_lonely <- rbind(herbicide_t_lonely, herbicide_long[i,])
+    }
+  }  
+  return(herbicide_t_lonely)
+}
+
+EEAAO_TERBUTYRNE <- function (naybicide, temps){
+  herbicide <- na.omit(naybicide)
+  # Extraire les noms des colonnes de temps (4 à 37)
+  time_labels <- colnames(herbicide)[3:ncol(herbicide)]
+  
+  # Étape 1: Créer un dataframe vide pour stocker les nouvelles données
+  herbicide_long <- data.frame(
+    id = integer(),
+    time = character(),
+    mortality = numeric()
+  )
+  
+  # Étape 2: Boucler sur chaque échantillon (chaque ligne) et sur chaque temps (colonnes 4 à 37)
+  for (i in 1:nrow(herbicide)) {
+    # Concentration initiale (t0) pour cet échantillon
+    concentration_initiale <- herbicide[i, 3]
+    
+    # Boucler sur les colonnes de temps (4 à 37)
+    for (j in 3:ncol(herbicide)) {
+      # Calculer la mortalité à chaque temps
+      mortality_value <- (concentration_initiale - herbicide[i, j]) / concentration_initiale
+      
+      
+      # Ajouter une nouvelle ligne au dataframe
+      herbicide_long <- rbind(
+        herbicide_long,
+        data.frame(
+          id = herbicide[i, 2],       # L'identifiant de l'échantillon
+          time = time_labels[j - 2],    # Le nom de la colonne (intitulé de temps)
+          mortality = mortality_value    # La mortalité calculée
+        )
+      )
+    }
+  }
+  
+  # Remplacer toutes les valeurs négatives de la colonne 'mortality' par 0
+  herbicide_long$X1[herbicide_long$X1 <= 0] <- 0.001
+  herbicide_long$X1[herbicide_long$X1 == 1] <- 0.999
+  
+  # Vérifier les premières lignes après la modification
+  head(herbicide_long)
+  
+  # Appliquer la transformation probit sur la mortalité
+  herbicide_long$probit <- qnorm(herbicide_long$X1) +5 ##if real probits you want
+  
+  herbicide_long$concentration <- 0
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$Designation[i] == "T 0,15625") {
+      herbicide_long$concentration[i] <- 0.15625
+    }
+    if (herbicide_long$Designation[i] == "T 0,3125") {
+      herbicide_long$concentration[i] <- 0.3125
+    }
+    if (herbicide_long$Designation[i] == "T 0,625") {
+      herbicide_long$concentration[i] <- 0.625
+    }
+    if (herbicide_long$Designation[i] == "T 1,25") {
+      herbicide_long$concentration[i] <- 1.25
+    }
+    if (herbicide_long$Designation[i] == "T 2,5") {
+      herbicide_long$concentration[i] <- 2.5
+    }
+    if (herbicide_long$Designation[i] == "T 5") {
+      herbicide_long$concentration[i] <- 5
+    }
+    if (herbicide_long$Designation[i] == "T 10") {
+      herbicide_long$concentration[i] <- 10
+    }
+  }
+  
+  herbicide_long$log_concentration <- log(herbicide_long$concentration)
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$log_concentration[i] == -Inf){
+      herbicide_long$log_concentration[i] <- -3
+    }
+  }
+  
+  herbicide_t_lonely <- data.frame()
+  
+  for (i in 1:nrow(herbicide_long)){
+    if (herbicide_long$time[i] == temps){
+      herbicide_t_lonely <- rbind(herbicide_t_lonely, herbicide_long[i,])
+    }
+  }  
+  return(herbicide_t_lonely)
+}
