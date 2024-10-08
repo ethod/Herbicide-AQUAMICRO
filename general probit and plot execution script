@@ -1,0 +1,131 @@
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(data.table)
+library(readxl)
+
+#idk why this doesn't work baby
+#source('Herbicide_data_analysis.R')
+
+DIURON_dat<-read_excel("G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                       sheet = 1)
+IRGAROL_dat<-read_excel("G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                        sheet = 2)
+TERBUTRYNE_dat<-read_excel("G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                           sheet = 3)
+ISOPROTURON_dat<-read_excel("G2_data_TD_ecotox_microbienne_2023(1).xlsx",  
+                            sheet = 4)
+#______________DIURON________________________________________________________________
+DI_24 <- EEAAO_DIURON(DIURON_dat, 24)
+DI_48 <- EEAAO_DIURON(DIURON_dat, 48)
+
+
+# Fit the linear regression model
+probit_DI_24 <- lm(probit ~ log_concentration, data = DI_24) 
+probit_DI_48 <- lm(probit ~ log_concentration, data = DI_48)
+
+# Créer le graphique
+plot(DI_24$log_concentration, DI_24$probit, 
+     xlab = "Log(Concentration)", ylab = "Probit (Mortality)",
+     main = "Probit vs Log(Concentration) for DIURON 24h and DIURON 48h",
+     pch = 19, col = "cyan3", xlim = range(c(DI_24$log_concentration, DI_48$log_concentration)),
+     ylim = range(c(DI_24$probit, DI_48$probit)))
+
+# Ajouter les données de DI_48
+points(DI_48$log_concentration, DI_48$probit, pch = 19, col = "chocolate")
+
+# Ajouter les lignes de régression
+abline(probit_DI_24, col = "cyan3", lwd = 2)
+abline(probit_DI_48, col = "chocolate", lwd = 2)
+
+# Ajouter une légende
+legend("topleft", legend = c("DI_24", "DI_48"), col = c("cyan3", "chocolate"), pch = 19, lty = 1)
+
+#_____________IRGAROL______________________________________________________________
+IR_24 <- EEAAO_IRGAROL(IRGAROL_dat, 24)
+IR_48 <- EEAAO_IRGAROL(IRGAROL_dat, 48)
+
+
+# Fit the linear regression model
+probit_IR_24 <- lm(probit ~ log_concentration, data = IR_24) 
+probit_IR_48 <- lm(probit ~ log_concentration, data = IR_48)
+
+
+# Créer le graphique
+plot(IR_24$log_concentration, IR_24$probit, 
+     xlab = "Log(Concentration)", ylab = "Probit (Mortality)",
+     main = "Probit vs Log(Concentration) for IRGAROL 24h and IRGAROL 48h",
+     pch = 19, col = "seagreen", xlim = range(c(IR_24$log_concentration, IR_48$log_concentration)),
+     ylim = range(c(IR_24$probit, IR_48$probit)))
+
+# Ajouter les données de IR_48
+points(IR_48$log_concentration, IR_48$probit, pch = 19, col = "sienna2")
+
+# Ajouter les lignes de régression
+abline(probit_IR_24, col = "seagreen", lwd = 2)
+abline(probit_IR_48, col = "sienna2", lwd = 2)
+
+# Ajouter une légende
+legend("topleft", legend = c("IR_24", "IR_48"), col = c("seagreen", "sienna2"), pch = 19, lty = 1)
+
+
+
+#_____________TERBUTRYNE_________________________________________________________
+
+TER_24 <- EEAAO_TERBUTYRNE(TERBUTRYNE_dat, 24)
+TER_44 <- EEAAO_TERBUTYRNE(TERBUTRYNE_dat, 44)
+
+
+# Fit the linear regression model
+probit_TER_24 <- lm(probit ~ log_concentration, data = TER_24) 
+probit_TER_44 <- lm(probit ~ log_concentration, data = TER_44)
+
+
+# Créer le graphique
+plot(TER_24$log_concentration, TER_24$probit, 
+     xlab = "Log(Concentration)", ylab = "Probit (Mortality)",
+     main = "Probit vs Log(Concentration) for TERBUTRYNE 24h and TERBUTRYNE 44h",
+     pch = 19, col = "orchid", xlim = range(c(TER_24$log_concentration, TER_44$log_concentration)),
+     ylim = range(c(TER_24$probit, TER_44$probit)))
+
+# Ajouter les données de TER_48
+points(TER_44$log_concentration, TER_44$probit, pch = 19, col = "midnightblue")
+
+# Ajouter les lignes de régression
+abline(probit_TER_24, col = "orchid", lwd = 2)
+abline(probit_TER_44, col = "midnightblue", lwd = 2)
+
+# Ajouter une légende
+legend("topleft", legend = c("TER_24", "TER_48"), col = c("orchid", "midnightblue"), pch = 19, lty = 1)
+
+
+
+#_____________ISOPROTURON_________________________________________________________
+ISO_24 <- EEAAO_ISOPROTURON(ISOPROTURON_dat, 24)
+ISO_48 <- EEAAO_ISOPROTURON(ISOPROTURON_dat, 48)
+
+
+# Fit the linear regression model
+probit_ISO_24 <- lm(probit ~ log_concentration, data = ISO_24) 
+probit_ISO_48 <- lm(probit ~ log_concentration, data = ISO_48)
+
+
+# Créer le graphique
+plot(ISO_24$log_concentration, ISO_24$probit, 
+     xlab = "Log(Concentration)", ylab = "Probit (Mortality)",
+     main = "Probit vs Log(Concentration) for ISOBUTRYNE 24h and ISOBUTRYNE 48h",
+     pch = 19, col = "pink3", xlim = range(c(ISO_24$log_concentration, ISO_48$log_concentration)),
+     ylim = range(c(ISO_24$probit, ISO_48$probit)))
+
+# AjouISO les données de TER_48
+points(ISO_48$log_concentration, ISO_48$probit, pch = 19, col = "olivedrab")
+
+# Ajouter les lignes de régression
+abline(probit_ISO_24, col = "pink3", lwd = 2)
+abline(probit_ISO_48, col = "olivedrab", lwd = 2)
+
+# Ajouter une légende
+legend("topleft", legend = c("ISO_24", "ISO_48"), col = c("pink3", "olivedrab"), pch = 19, lty = 1)
+
+#-------------------------------------------------------------------------------------------------------------
+
